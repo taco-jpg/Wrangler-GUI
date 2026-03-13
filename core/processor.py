@@ -90,13 +90,19 @@ class CommandManager(QObject):
             if not line:
                 continue
             
-            try:
-                json_data = json.loads(line)
-                self.json_received.emit(json_data)
-            except json.JSONDecodeError:
-                # 如果不是JSON，则作为普通文本输出
-                html_output = ansi_to_html(line + '\n')
-                self.output_received.emit(html_output)
+            # Try to parse as JSON only if it looks like JSON
+            if line.startswith('{') or line.startswith('['):
+                try:
+                    json_data = json.loads(line)
+                    self.json_received.emit(json_data)
+                    continue  # Successfully parsed, move to the next line
+                except json.JSONDecodeError:
+                    # It looked like JSON but failed to parse, so treat as regular text.
+                    pass
+            
+            # If it's not JSON or failed to parse, treat as regular text output
+            html_output = ansi_to_html(line + '\n')
+            self.output_received.emit(html_output)
 
     def _on_ready_read_stderr(self):
         """处理标准错误输出。"""
@@ -109,7 +115,7 @@ class CommandManager(QObject):
         html_output = ansi_to_html(data)
         self.output_received.emit(f'<span style="color:red;">{html_output}</span>')
 
-    def execute(self, command, args=None, working_directory=None):
+    def execute(self, command, args=None, working_directory=None, stdin=None):
         """
         执行一个新命令。
         :param command: 要执行的命令 (e.g., "wrangler")。
@@ -133,6 +139,10 @@ class CommandManager(QObject):
             self._process.setWorkingDirectory("")
 
         self._process.start(command, args)
+
+        if stdin:
+            self._process.write(stdin.encode('utf-8'))
+            self._process.closeWriteChannel()
 
     def stop(self):
         """停止当前正在运行的进程。"""

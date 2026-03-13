@@ -1,59 +1,79 @@
-
 from PySide6.QtCore import Qt, QPropertyAnimation, Property, QEasingCurve
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtGui import QColor, QPainter, QPaintEvent
+from .theme import COLORS, get_font
+from .animations import apply_spring_click_animation
 
 class AnimatedButton(QPushButton):
-    """一个背景颜色可以平滑过渡的按钮。"""
+    """一个支持颜色动画和缩放动画的按钮，样式由theme.py定义。"""
 
-    def __init__(self, text="", parent=None):
+    def __init__(self, text="", parent=None, button_type='primary'):
         super().__init__(text, parent)
-        # 使用支持 alpha 通道的 QColor
-        self._color = QColor("rgba(255, 255, 255, 0.05)")
-        self.hover_color = QColor("rgba(255, 255, 255, 0.1)")
-        self.pressed_color = QColor("rgba(255, 255, 255, 0.12)")
-        self.default_color = self._color
+        self.button_type = button_type
+        self._setup_style()
 
-        self.animation = QPropertyAnimation(self, b"color")
-        self.animation.setDuration(100) # 严格设置为 100ms
-        self.animation.setEasingCurve(QEasingCurve.InOutCubic)
+        self.color_animation = QPropertyAnimation(self, b"color")
+        self.color_animation.setDuration(150)
+        self.color_animation.setEasingCurve(QEasingCurve.InOutCubic)
+        
+        # 应用Spring动画
+        apply_spring_click_animation(self)
+
+    def _setup_style(self):
+        self.setFont(get_font("UI_BOLD"))
+        self.setCursor(Qt.PointingHandCursor)
+        self.setStyleSheet("padding: 8px 20px; border-radius: 6px;")
+
+        if self.button_type == 'primary':
+            self.default_color = COLORS["ACCENT_ORANGE"]
+            self.hover_color = COLORS["ACCENT_ORANGE_HOVER"]
+            self.pressed_color = COLORS["ACCENT_ORANGE_PRESS"]
+            self.text_color = QColor("#FFFFFF")
+            self.border_color = Qt.transparent
+        elif self.button_type == 'secondary':
+            self.default_color = QColor("#FFFFFF")
+            self.hover_color = COLORS["BACKGROUND_SECONDARY"]
+            self.pressed_color = COLORS["BACKGROUND_TERTIARY"]
+            self.text_color = COLORS["TEXT_PRIMARY"]
+            self.border_color = COLORS["BORDER_STRONG"]
+        elif self.button_type == 'outline':
+            self.default_color = QColor("#FFFFFF")
+            self.hover_color = COLORS["ACCENT_ORANGE_LIGHT"]
+            self.pressed_color = COLORS["ACCENT_ORANGE_LIGHT"]
+            self.text_color = COLORS["ACCENT_ORANGE"]
+            self.border_color = COLORS["ACCENT_ORANGE"]
+        
+        self._color = self.default_color
 
     def enterEvent(self, event):
-        """鼠标进入事件，触发悬停动画。"""
-        self.animation.setEndValue(self.hover_color)
-        self.animation.start()
+        self.color_animation.setEndValue(self.hover_color)
+        self.color_animation.start()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        """鼠标离开事件，恢复默认颜色。"""
-        self.animation.setEndValue(self.default_color)
-        self.animation.start()
+        self.color_animation.setEndValue(self.default_color)
+        self.color_animation.start()
         super().leaveEvent(event)
 
     def mousePressEvent(self, event):
-        """鼠标按下事件，变为按下颜色。"""
-        self.animation.setEndValue(self.pressed_color)
-        self.animation.start()
+        self.color_animation.setEndValue(self.pressed_color)
+        self.color_animation.start()
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        """鼠标释放事件，恢复悬停颜色。"""
-        self.animation.setEndValue(self.hover_color)
-        self.animation.start()
+        self.color_animation.setEndValue(self.hover_color)
+        self.color_animation.start()
         super().mouseReleaseEvent(event)
 
     def paintEvent(self, event: QPaintEvent):
-        """重写绘图事件，手动绘制背景。"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        
-        # 绘制背景
-        painter.setBrush(self._color)
-        painter.setPen(Qt.NoPen)
-        painter.drawRoundedRect(self.rect(), 6, 6) # 6px 圆角
 
-        # 绘制文本
-        painter.setPen(QColor("#f0f0f0"))
+        painter.setBrush(self._color)
+        painter.setPen(self.border_color)
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 5, 5)
+
+        painter.setPen(self.text_color)
         painter.drawText(self.rect(), Qt.AlignCenter, self.text())
 
     def _get_color(self):
@@ -61,6 +81,6 @@ class AnimatedButton(QPushButton):
 
     def _set_color(self, color):
         self._color = color
-        self.update() # 颜色改变时，请求重绘
+        self.update()
 
     color = Property(QColor, _get_color, _set_color)

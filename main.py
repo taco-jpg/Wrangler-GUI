@@ -1,45 +1,39 @@
-
 import sys
-import os
 from PySide6.QtWidgets import QApplication
 from ui.main_window import MainWindow
+from ui.welcome_screen import WelcomeScreen
+from ui.theme import get_font
 
-def load_stylesheet(app):
-    """加载QSS样式表。"""
-    # 获取 main.py 文件的绝对路径
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    # 构建样式表文件的路径
-    stylesheet_path = os.path.join(base_dir, 'assets', 'style.qss')
-    
-    if not os.path.exists(stylesheet_path):
-        print(f"Warning: Stylesheet not found at {stylesheet_path}")
-        return
+class AppController:
+    def __init__(self):
+        self.app = QApplication(sys.argv)
+        self.app.setFont(get_font("UI"))
+        
+        self.main_window = None
+        self.welcome_screen = WelcomeScreen()
+        self.welcome_screen.open_project_requested.connect(self.show_main_window)
 
-    with open(stylesheet_path, "r") as f:
-        style = f.read()
-        app.setStyleSheet(style)
+    def run(self):
+        self.welcome_screen.show()
+        sys.exit(self.app.exec())
+
+    def show_main_window(self):
+        self.welcome_screen.close()
+        if not self.main_window:
+            self.main_window = MainWindow()
+        self.main_window.show()
+        self.main_window._on_open_project() # Trigger file dialog immediately
 
 def main():
-    """应用主入口函数。"""
-    app = QApplication(sys.argv)
-    
-    # 加载样式
-    load_stylesheet(app)
-    
-    # 创建并显示主窗口
-    window = MainWindow()
-    window.show()
-    
-    # 启动事件循环
-    sys.exit(app.exec())
-
-if __name__ == "__main__":
-    # 检查 wrangler 是否安装
+    # Check for wrangler installation first
     from shutil import which
     if not which("wrangler"):
-        print("Error: 'wrangler' command not found.")
-        print("Please install it using: npm install -g wrangler")
+        from PySide6.QtWidgets import QMessageBox
+        QMessageBox.critical(None, "Error", "'wrangler' command not found.\nPlease install it using: npm install -g wrangler")
         sys.exit(1)
-        
-    main()
 
+    controller = AppController()
+    controller.run()
+
+if __name__ == "__main__":
+    main()
