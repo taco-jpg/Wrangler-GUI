@@ -63,10 +63,11 @@ class CommandManager(QObject):
     process_started = Signal()          # 进程开始时发出
     process_finished = Signal(int, QProcess.ExitStatus) # 进程结束时发出
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, raw_output=False):
         super().__init__(parent)
         self._process = QProcess(self)
         self._buffer = ""
+        self.raw_output = raw_output
         self._setup_signals()
 
     def _setup_signals(self):
@@ -100,9 +101,11 @@ class CommandManager(QObject):
                     # It looked like JSON but failed to parse, so treat as regular text.
                     pass
             
-            # If it's not JSON or failed to parse, treat as regular text output
-            html_output = ansi_to_html(line + '\n')
-            self.output_received.emit(html_output)
+            if self.raw_output:
+                self.output_received.emit(line)
+            else:
+                html_output = ansi_to_html(line + '\n')
+                self.output_received.emit(html_output)
 
     def _on_ready_read_stderr(self):
         """处理标准错误输出。"""
@@ -111,9 +114,11 @@ class CommandManager(QObject):
         if 'error' in data.lower():
             self.error_detected.emit()
 
-        # 错误输出也转换为HTML，通常它们也包含颜色代码
-        html_output = ansi_to_html(data)
-        self.output_received.emit(f'<span style="color:red;">{html_output}</span>')
+        if self.raw_output:
+            self.output_received.emit(data)
+        else:
+            html_output = ansi_to_html(data)
+            self.output_received.emit(f'<span style="color:red;">{html_output}</span>')
 
     def execute(self, command, args=None, working_directory=None, stdin=None):
         """

@@ -9,12 +9,16 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QPainter, QColor, QLinearGradient, QFont, QScreen
 
+from . import theme
+
 class WelcomeScreen(QWidget):
     open_project_requested = Signal()
 
     def __init__(self):
         super().__init__()
+        self.setFocusPolicy(Qt.StrongFocus)
         self._scale = 1.0
+        theme.initialize_fonts()
         self._setup_window()
         self._setup_ui()
         self._setup_animations()
@@ -38,7 +42,7 @@ class WelcomeScreen(QWidget):
         content_widget.move(0, -20)
 
         icon_label = QLabel("⚡")
-        icon_font = QFont("-apple-system", 32)
+        icon_font = QFont(theme.SYSTEM_FONT, 32)
         icon_label.setFont(icon_font)
         icon_label.setAlignment(Qt.AlignCenter)
         icon_label.setFixedSize(64, 64)
@@ -47,7 +51,8 @@ class WelcomeScreen(QWidget):
         content_layout.addSpacing(20)
 
         title_label = QLabel("Wrangler GUI")
-        title_font = QFont("SF Pro Display", 28, QFont.Bold)
+        title_font = QFont(theme.FONTS["UI_BOLD"])
+        title_font.setPointSize(28)
         title_font.setLetterSpacing(QFont.PercentageSpacing, 99.5)
         title_label.setFont(title_font)
         title_label.setStyleSheet("color: #FFFFFF;")
@@ -56,7 +61,9 @@ class WelcomeScreen(QWidget):
         content_layout.addSpacing(8)
 
         subtitle_label = QLabel("A modern interface for Cloudflare Workers")
-        subtitle_label.setFont(QFont("-apple-system", 14))
+        subtitle_font = QFont(theme.FONTS["UI"])
+        subtitle_font.setPointSize(14)
+        subtitle_label.setFont(subtitle_font)
         subtitle_label.setStyleSheet("color: rgba(255,255,255,0.80);")
         subtitle_label.setAlignment(Qt.AlignCenter)
         content_layout.addWidget(subtitle_label)
@@ -64,7 +71,8 @@ class WelcomeScreen(QWidget):
 
         self.open_button = QPushButton("Open a Project")
         self.open_button.setFixedSize(280, 48)
-        button_font = QFont("-apple-system", 15, QFont.DemiBold)
+        button_font = QFont(theme.FONTS["UI_BOLD"])
+        button_font.setPointSize(15)
         self.open_button.setFont(button_font)
         self.open_button.setCursor(Qt.PointingHandCursor)
         self.open_button.setStyleSheet("""
@@ -81,7 +89,9 @@ class WelcomeScreen(QWidget):
         content_layout.addSpacing(20)
 
         version_label = QLabel(self._get_wrangler_version())
-        version_label.setFont(QFont("-apple-system", 11))
+        version_font = QFont(theme.FONTS["UI"])
+        version_font.setPointSize(11)
+        version_label.setFont(version_font)
         version_label.setStyleSheet("color: rgba(255,255,255,0.45);")
         version_label.setAlignment(Qt.AlignCenter)
         content_layout.addWidget(version_label)
@@ -163,3 +173,8 @@ class WelcomeScreen(QWidget):
         self.update()
 
     scale = Property(float, get_scale, set_scale)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.close()
+        super().keyPressEvent(event)

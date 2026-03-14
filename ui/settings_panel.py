@@ -220,7 +220,8 @@ class SettingsPanel(QWidget):
                 min-height: 36px;
             }}
             QLineEdit:focus {{
-                border: 2px solid {COLORS["ACCENT_ORANGE"].name()};
+                border: 1px solid {COLORS["ACCENT_ORANGE"].name()};
+                outline: none;
             }}
             QFormLayout QLabel {{
                 color: {COLORS["TEXT_SECONDARY"].name()};

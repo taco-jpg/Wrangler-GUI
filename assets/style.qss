@@ -12,7 +12,6 @@
 QMainWindow, QWidget {
     background-color: #111111;
     color: #e0e0e0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
 }
 
@@ -101,6 +100,11 @@ QPlainTextEdit {
     font-family: 'Fira Code', 'Menlo', 'Monaco', 'Consolas', monospace;
 }
 
+QPlainTextEdit:focus {
+    border: 1px solid #007acc; /* Cloudflare Blue on focus */
+    outline: none;
+}
+
 /* --- Settings Panel Inputs --- */
 QLineEdit {
     background-color: rgba(255, 255, 255, 0.05);
@@ -112,6 +116,7 @@ QLineEdit {
 
 QLineEdit:focus {
     border: 1px solid #007acc; /* Cloudflare Blue on focus */
+    outline: none;
 }
 
 /* --- Splitter --- */
@@ -125,7 +130,7 @@ QSplitter::handle:hover {
 /* --- Dock Widget (Log Panel) --- */
 QDockWidget {
     titlebar-close-icon: none;
-    titlebar-normal-icon: none;
+    /* titlebar-normal-icon: none; */
 }
 
 QDockWidget::title {

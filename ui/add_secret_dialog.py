@@ -28,7 +28,15 @@ class AddSecretDialog(QDialog):
 
         self.setStyleSheet(f"""
             QDialog {{ background-color: {COLORS["BACKGROUND_PRIMARY"].name()}; }}
-            QLineEdit {{ border: 1px solid {COLORS["BORDER_DEFAULT"].name()}; padding: 8px; border-radius: 4px; }}
+            QLineEdit {{
+                border: 1px solid {COLORS["BORDER_DEFAULT"].name()};
+                padding: 8px;
+                border-radius: 4px;
+            }}
+            QLineEdit:focus {{
+                border: 1px solid {COLORS["ACCENT_ORANGE"].name()};
+                outline: none;
+            }}
         """)
 
     def get_values(self):

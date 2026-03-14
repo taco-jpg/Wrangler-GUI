@@ -1,4 +1,4 @@
-from PySide6.QtGui import QColor, QFont
+from PySide6.QtGui import QColor, QFont, QFontDatabase
 
 # --- Color Palette ---
 COLORS = {
@@ -19,16 +19,33 @@ COLORS = {
     "CODE_BG": QColor("#1E1E1E"),
 }
 
-# --- Typography ---
-FONTS = {
-    "UI": QFont("-apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif", 13),
-    "UI_BOLD": QFont("-apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif", 13, QFont.Weight.Bold),
-    "CODE": QFont("'SF Mono', 'Fira Code', 'Cascadia Code', monospace", 13),
-    "SECTION_TITLE": QFont("-apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif", 12, QFont.Weight.Bold),
-}
+SYSTEM_FONT = ""
+FONTS = {}
+
+def initialize_fonts():
+    global SYSTEM_FONT, FONTS
+
+    def get_system_font_family() -> str:
+        preferred = ["SF Pro Display", "SF Pro Text", "Helvetica Neue", "Arial"]
+        available = QFontDatabase.families()
+        for f in preferred:
+            if f in available:
+                return f
+        return ""
+
+    SYSTEM_FONT = get_system_font_family()
+
+    FONTS = {
+        "UI": QFont(SYSTEM_FONT, 13),
+        "UI_BOLD": QFont(SYSTEM_FONT, 13, QFont.Weight.Bold),
+        "CODE": QFont("'SF Mono', 'Fira Code', 'Cascadia Code', monospace", 13),
+        "SECTION_TITLE": QFont(SYSTEM_FONT, 12, QFont.Weight.Bold),
+    }
 
 def get_font(name="UI"):
     """Helper to get a font from the font dictionary."""
+    if not FONTS:  # 如果字体未初始化，先初始化
+        initialize_fonts()
     return FONTS.get(name, FONTS["UI"])
 
 def get_color(name):
