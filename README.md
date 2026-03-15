@@ -151,9 +151,11 @@ Wrangler-GUI/
 
 Contributions are welcome! Here's how you can help:
 
-1. **Report bugs**: Open an issue with detailed reproduction steps
-2. **Suggest features**: Use the issue tracker to propose new features
+1. **Report bugs**: Use the [Bug Report template](.github/ISSUE_TEMPLATE/bug_report.md) with detailed reproduction steps
+2. **Suggest features**: Use the [Feature Request template](.github/ISSUE_TEMPLATE/feature_request.md) to propose new features
 3. **Submit pull requests**: Fork the repo, make changes, and submit a PR
+
+For detailed guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Development Setup
 ```bash

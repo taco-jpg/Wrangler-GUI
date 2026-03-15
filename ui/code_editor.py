@@ -136,8 +136,26 @@ class CodeEditor(QPlainTextEdit):
         self.setExtraSelections(extra_selections)
 
     def keyPressEvent(self, event):
+        # 优先处理标准快捷键，确保不阻断默认行为
+        standard_sequences = [
+            QKeySequence.StandardKey.Copy,
+            QKeySequence.StandardKey.Paste,
+            QKeySequence.StandardKey.Undo,
+            QKeySequence.StandardKey.Redo,
+            QKeySequence.StandardKey.SelectAll,
+            QKeySequence.StandardKey.Save,
+            QKeySequence.StandardKey.Delete,
+            QKeySequence.StandardKey.Backspace,
+            QKeySequence.StandardKey.Cut,
+        ]
+
+        for seq in standard_sequences:
+            if event.matches(seq):
+                super().keyPressEvent(event)
+                return
+
         cursor = self.textCursor()
-        
+
         if event.matches(QKeySequence.StandardKey.Comment):
             self.toggle_comment()
             return
